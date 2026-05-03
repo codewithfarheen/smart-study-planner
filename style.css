@@ -1,0 +1,145 @@
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #020b12, #041f2b, #062f3f);
+    color: #fff;
+}
+
+/* PARTICLES */
+#particles {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+}
+
+/* MAIN CARD */
+.container {
+    width: 520px;
+    margin: 60px auto;
+    padding: 30px;
+
+    border-radius: 20px;
+
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(18px);
+
+    border: 1px solid rgba(255,255,255,0.2);
+
+    box-shadow: 0 0 40px rgba(0,198,255,0.15);
+}
+
+/* TITLE */
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* LANGUAGE */
+.lang-box {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 15px;
+}
+
+#language {
+    padding: 6px;
+    border-radius: 6px;
+    border: none;
+}
+
+/* INPUT GROUP */
+.task-input {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+/* INPUTS */
+.task-input input,
+.task-input select {
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+
+    background: rgba(255,255,255,0.9);
+    color: #222;
+
+    flex: 1;
+}
+
+/* BUTTON */
+button {
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: none;
+
+    background: linear-gradient(45deg, #00c6ff, #0072ff);
+    color: white;
+
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+/* HOVER */
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 12px #00c6ff;
+}
+
+/* FILTERS */
+.filters {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+/* TASK LIST */
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+li {
+    background: rgba(255,255,255,0.95);
+    color: #222;
+
+    margin: 10px 0;
+    padding: 12px;
+    border-radius: 12px;
+
+    display: flex;
+    justify-content: space-between;
+
+    transition: 0.3s;
+}
+
+/* TASK HOVER */
+li:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0 15px rgba(0,198,255,0.2);
+}
+
+/* COMPLETED */
+.completed {
+    text-decoration: line-through;
+    opacity: 0.6;
+}
+
+/* PROGRESS */
+.progress-bar {
+    height: 10px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 10px;
+    margin-bottom: 15px;
+}
+
+#progressFill {
+    height: 100%;
+    width: 0%;
+    border-radius: 10px;
+
+    background: linear-gradient(90deg, #00c6ff, #0072ff);
+}

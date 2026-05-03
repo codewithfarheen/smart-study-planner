@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Smart Study Planner</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<!-- PARTICLES -->
+<canvas id="particles"></canvas>
+
+<div class="container">
+
+    <h1 id="title">📚 Smart Study Planner</h1>
+
+    <!-- Language -->
+    <div class="lang-box">
+        <select id="language" onchange="changeLanguage()">
+            <option value="en">English</option>
+            <option value="hi">Hindi</option>
+            <option value="fr">French</option>
+            <option value="es">Spanish</option>
+        </select>
+    </div>
+
+    <!-- INPUT -->
+    <div class="task-input">
+        <input type="text" id="taskInput" placeholder="Enter task">
+        <input type="date" id="taskDate">
+        <input type="time" id="taskTime">
+
+        <select id="priority">
+            <option value="High">🔴 High</option>
+            <option value="Medium">🟡 Medium</option>
+            <option value="Low">🟢 Low</option>
+        </select>
+
+        <button id="addBtn" onclick="addTask()">Add</button>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="filters">
+        <button id="allBtn" onclick="filterTasks('all')">All</button>
+        <button id="completedBtn" onclick="filterTasks('completed')">Completed</button>
+        <button id="pendingBtn" onclick="filterTasks('pending')">Pending</button>
+    </div>
+
+    <!-- PROGRESS -->
+    <p id="progressText">Progress: 0%</p>
+    <div class="progress-bar">
+        <div id="progressFill"></div>
+    </div>
+
+    <!-- TASK LIST -->
+    <ul id="taskList"></ul>
+
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
