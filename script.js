@@ -3,9 +3,56 @@ let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
 let currentFilter = "all";
 let currentLang = "en";
 
-const BACKEND_URL = "https://smart-study-backend.onrender.com/translate"; // 🔁 change if needed
+const BACKEND_URL = "https://smart-study-backend.onrender.com/translate";
 
-// ---------------- TRANSLATIONS ----------------
+// ---------------- WORD FIX (SMART DICTIONARY) ----------------
+const wordFix = {
+    en: {
+        "math": "math",
+        "study": "study",
+        "book": "book",
+        "homework": "homework",
+        "science": "science",
+        "english": "english",
+        "computer": "computer",
+        "project": "project"
+    },
+
+    hi: {
+        "math": "गणित",
+        "study": "अध्ययन",
+        "book": "किताब",
+        "homework": "गृहकार्य",
+        "science": "विज्ञान",
+        "english": "अंग्रेज़ी",
+        "computer": "कंप्यूटर",
+        "project": "परियोजना"
+    },
+
+    fr: {
+        "math": "mathématiques",
+        "study": "étudier",
+        "book": "livre",
+        "homework": "devoirs",
+        "science": "science",
+        "english": "anglais",
+        "computer": "ordinateur",
+        "project": "projet"
+    },
+
+    es: {
+        "math": "matemáticas",
+        "study": "estudiar",
+        "book": "libro",
+        "homework": "tarea",
+        "science": "ciencia",
+        "english": "inglés",
+        "computer": "computadora",
+        "project": "proyecto"
+    }
+};
+
+// ---------------- UI TRANSLATIONS ----------------
 const translations = {
     en: {
         title: "📚 Smart Study Planner",
@@ -76,7 +123,7 @@ function renderTasks() {
     updateProgress();
 }
 
-// ---------------- ADD TASK (FIXED TRANSLATION) ----------------
+// ---------------- ADD TASK (SMART TRANSLATION) ----------------
 async function addTask() {
     let input = document.getElementById("taskInput");
     let text = input.value.trim();
@@ -86,8 +133,12 @@ async function addTask() {
         return;
     }
 
-    // 🔥 TRANSLATE INPUT BEFORE SAVING
-    if (currentLang !== "en") {
+    let original = text.toLowerCase();
+
+    // 🔥 CHECK WORD FIX FIRST
+    if (currentLang !== "en" && wordFix[currentLang][original]) {
+        text = wordFix[currentLang][original];
+    } else if (currentLang !== "en") {
         try {
             let res = await fetch(BACKEND_URL, {
                 method: "POST",
@@ -99,6 +150,7 @@ async function addTask() {
             });
 
             let data = await res.json();
+
             if (data.translated) {
                 text = data.translated;
             }
@@ -157,7 +209,7 @@ function saveTasks() {
     localStorage.setItem("tasks", JSON.stringify(tasks));
 }
 
-// ---------------- LANGUAGE CHANGE ----------------
+// ---------------- LANGUAGE ----------------
 function changeLanguage() {
     currentLang = document.getElementById("language").value;
     let t = translations[currentLang];
