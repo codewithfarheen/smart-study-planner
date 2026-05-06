@@ -1,8 +1,11 @@
+// ---------------- GLOBAL ----------------
 let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
 let currentFilter = "all";
 let currentLang = "en";
 
-/* ---------------- UI TRANSLATIONS ---------------- */
+const BACKEND_URL = "https://smart-study-backend.onrender.com/translate"; // 🔁 change if needed
+
+// ---------------- TRANSLATIONS ----------------
 const translations = {
     en: {
         title: "📚 Smart Study Planner",
@@ -42,9 +45,9 @@ const translations = {
     }
 };
 
-/* ---------------- RENDER TASKS ---------------- */
+// ---------------- RENDER TASKS ----------------
 function renderTasks() {
-    let list = document.getElementById("taskList");
+    const list = document.getElementById("taskList");
     list.innerHTML = "";
 
     let filtered = tasks.filter(t => {
@@ -59,7 +62,7 @@ function renderTasks() {
         li.innerHTML = `
             <div class="${task.completed ? "completed" : ""}">
                 ${task.text}<br>
-                ${task.date || ""} ${task.time || ""}
+                <small>${task.date || ""} ${task.time || ""}</small>
             </div>
             <div>
                 <button onclick="toggleTask(${index})">✔</button>
@@ -73,18 +76,39 @@ function renderTasks() {
     updateProgress();
 }
 
-/* ---------------- ADD TASK ---------------- */
+// ---------------- ADD TASK (FIXED TRANSLATION) ----------------
 async function addTask() {
-    let text = document.getElementById("taskInput").value.trim();
+    let input = document.getElementById("taskInput");
+    let text = input.value.trim();
 
-    if (!text) return alert("Enter task");
+    if (!text) {
+        alert("Enter task");
+        return;
+    }
 
+    // 🔥 TRANSLATE INPUT BEFORE SAVING
     if (currentLang !== "en") {
-        text = await translateText(text, currentLang);
+        try {
+            let res = await fetch(BACKEND_URL, {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    text: text,
+                    lang: currentLang
+                })
+            });
+
+            let data = await res.json();
+            if (data.translated) {
+                text = data.translated;
+            }
+        } catch (err) {
+            console.log("Translation failed:", err);
+        }
     }
 
     tasks.push({
-        text,
+        text: text,
         date: taskDate.value,
         time: taskTime.value,
         completed: false
@@ -93,30 +117,30 @@ async function addTask() {
     saveTasks();
     renderTasks();
 
-    taskInput.value = "";
+    input.value = "";
 }
 
-/* ---------------- TOGGLE ---------------- */
-function toggleTask(i) {
-    tasks[i].completed = !tasks[i].completed;
+// ---------------- TOGGLE ----------------
+function toggleTask(index) {
+    tasks[index].completed = !tasks[index].completed;
     saveTasks();
     renderTasks();
 }
 
-/* ---------------- DELETE ---------------- */
-function deleteTask(i) {
-    tasks.splice(i, 1);
+// ---------------- DELETE ----------------
+function deleteTask(index) {
+    tasks.splice(index, 1);
     saveTasks();
     renderTasks();
 }
 
-/* ---------------- FILTER ---------------- */
+// ---------------- FILTER ----------------
 function filterTasks(type) {
     currentFilter = type;
     renderTasks();
 }
 
-/* ---------------- PROGRESS ---------------- */
+// ---------------- PROGRESS ----------------
 function updateProgress() {
     let total = tasks.length;
     let done = tasks.filter(t => t.completed).length;
@@ -128,49 +152,37 @@ function updateProgress() {
     document.getElementById("progressFill").style.width = percent + "%";
 }
 
-/* ---------------- SAVE ---------------- */
+// ---------------- SAVE ----------------
 function saveTasks() {
     localStorage.setItem("tasks", JSON.stringify(tasks));
 }
 
-/* ---------------- TRANSLATE (API) ---------------- */
-async function translateText(text, lang) {
-    try {
-        let res = await fetch("https://smart-study-planner-clx1.onrender.com", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({ text, lang })
-        });
-
-        let data = await res.json();
-        return data.translated;
-    } catch {
-        return text;
-    }
-}
-
-/* ---------------- CHANGE LANGUAGE ---------------- */
+// ---------------- LANGUAGE CHANGE ----------------
 function changeLanguage() {
-    currentLang = language.value;
+    currentLang = document.getElementById("language").value;
     let t = translations[currentLang];
 
-    title.innerText = t.title;
-    taskInput.placeholder = t.placeholder;
+    document.getElementById("title").innerText = t.title;
+    document.getElementById("taskInput").placeholder = t.placeholder;
 
-    addBtn.innerText = t.add;
-    allBtn.innerText = t.all;
-    completedBtn.innerText = t.completed;
-    pendingBtn.innerText = t.pending;
+    document.getElementById("addBtn").innerText = t.add;
+    document.getElementById("allBtn").innerText = t.all;
+    document.getElementById("completedBtn").innerText = t.completed;
+    document.getElementById("pendingBtn").innerText = t.pending;
 
     updateProgress();
 }
 
-/* ---------------- PARTICLES ---------------- */
+// ---------------- PARTICLES ----------------
 const canvas = document.getElementById("particles");
 const ctx = canvas.getContext("2d");
 
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener("resize", resizeCanvas);
 
 let particles = [];
 
@@ -202,5 +214,5 @@ function animateParticles() {
 
 animateParticles();
 
-/* ---------------- INIT ---------------- */
+// ---------------- INIT ----------------
 renderTasks();
