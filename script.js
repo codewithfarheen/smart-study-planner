@@ -136,7 +136,7 @@ function saveTasks() {
 /* ---------------- TRANSLATE (API) ---------------- */
 async function translateText(text, lang) {
     try {
-        let res = await fetch("http://127.0.0.1:5000/translate", {
+        let res = await fetch("https://smart-study-planner-clx1.onrender.com", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({ text, lang })
