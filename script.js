@@ -3,98 +3,91 @@ let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
 let currentFilter = "all";
 let currentLang = "en";
 
-const BACKEND_URL = "https://smart-study-backend.onrender.com/translate";
+const BACKEND_URL = "https://smart-study-planner-clx1.onrender.com";
 
-// ---------------- WORD FIX (SMART DICTIONARY) ----------------
+// ---------------- WORD FIX ----------------
 const wordFix = {
-    en: {
-        "math": "math",
-        "study": "study",
-        "book": "book",
-        "homework": "homework",
-        "science": "science",
-        "english": "english",
-        "computer": "computer",
-        "project": "project"
-    },
-
-    hi: {
-        "math": "गणित",
-        "study": "अध्ययन",
-        "book": "किताब",
-        "homework": "गृहकार्य",
-        "science": "विज्ञान",
-        "english": "अंग्रेज़ी",
-        "computer": "कंप्यूटर",
-        "project": "परियोजना"
-    },
-
-    fr: {
-        "math": "mathématiques",
-        "study": "étudier",
-        "book": "livre",
-        "homework": "devoirs",
-        "science": "science",
-        "english": "anglais",
-        "computer": "ordinateur",
-        "project": "projet"
-    },
-
-    es: {
-        "math": "matemáticas",
-        "study": "estudiar",
-        "book": "libro",
-        "homework": "tarea",
-        "science": "ciencia",
-        "english": "inglés",
-        "computer": "computadora",
-        "project": "proyecto"
-    }
+    hi: { math: "गणित", study: "अध्ययन", book: "किताब", homework: "गृहकार्य" },
+    fr: { math: "mathématiques", study: "étudier", book: "livre", homework: "devoirs" },
+    es: { math: "matemáticas", study: "estudiar", book: "libro", homework: "tarea" }
 };
 
-// ---------------- UI TRANSLATIONS ----------------
+// ---------------- TRANSLATIONS UI ----------------
 const translations = {
-    en: {
-        title: "📚 Smart Study Planner",
-        placeholder: "Enter task",
-        add: "Add",
-        all: "All",
-        completed: "Completed",
-        pending: "Pending",
-        progress: "Progress"
-    },
-    hi: {
-        title: "📚 स्मार्ट स्टडी प्लानर",
-        placeholder: "कार्य लिखें",
-        add: "जोड़ें",
-        all: "सभी",
-        completed: "पूर्ण",
-        pending: "बाकी",
-        progress: "प्रगति"
-    },
-    fr: {
-        title: "📚 Planificateur intelligent",
-        placeholder: "Entrer tâche",
-        add: "Ajouter",
-        all: "Tous",
-        completed: "Terminé",
-        pending: "En attente",
-        progress: "Progrès"
-    },
-    es: {
-        title: "📚 Planificador inteligente",
-        placeholder: "Ingrese tarea",
-        add: "Agregar",
-        all: "Todos",
-        completed: "Completado",
-        pending: "Pendiente",
-        progress: "Progreso"
-    }
+    en: { title:"📚 Smart Study Planner", add:"Add", all:"All", completed:"Completed", pending:"Pending", placeholder:"Enter task", progress:"Progress" },
+    hi: { title:"📚 स्मार्ट स्टडी प्लानर", add:"जोड़ें", all:"सभी", completed:"पूर्ण", pending:"बाकी", placeholder:"कार्य लिखें", progress:"प्रगति" },
+    fr: { title:"📚 Planificateur intelligent", add:"Ajouter", all:"Tous", completed:"Terminé", pending:"En attente", placeholder:"Entrer tâche", progress:"Progrès" },
+    es: { title:"📚 Planificador inteligente", add:"Agregar", all:"Todos", completed:"Completado", pending:"Pendiente", placeholder:"Ingrese tarea", progress:"Progreso" }
 };
 
-// ---------------- RENDER TASKS ----------------
+// ---------------- LANGUAGE CHANGE ----------------
+function changeLanguage() {
+    currentLang = document.getElementById("language").value;
+
+    let t = translations[currentLang];
+
+    document.getElementById("title").innerText = t.title;
+    document.getElementById("taskInput").placeholder = t.placeholder;
+    document.getElementById("addBtn").innerText = t.add;
+    document.getElementById("allBtn").innerText = t.all;
+    document.getElementById("completedBtn").innerText = t.completed;
+    document.getElementById("pendingBtn").innerText = t.pending;
+
+    renderTasks();
+}
+
+// ---------------- ADD TASK (FINAL FIX) ----------------
+async function addTask() {
+    let input = document.getElementById("taskInput");
+    let text = input.value.trim();
+
+    if (!text) {
+        alert("Enter task");
+        return;
+    }
+
+    let original = text.toLowerCase();
+
+    // 🔥 STEP 1: WORD FIX FIRST
+    if (currentLang !== "en" && wordFix[currentLang] && wordFix[currentLang][original]) {
+        text = wordFix[currentLang][original];
+    }
+    // 🔥 STEP 2: API TRANSLATION
+    else if (currentLang !== "en") {
+        try {
+            let res = await fetch(BACKEND_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text: text, lang: currentLang })
+            });
+
+            let data = await res.json();
+
+            if (data.translated) {
+                text = data.translated;
+            }
+        } catch (e) {
+            console.log("Translation error:", e);
+        }
+    }
+
+    // 🔥 STEP 3: SAVE TRANSLATED TEXT
+    tasks.push({
+        text: text,
+        date: document.getElementById("taskDate").value,
+        time: document.getElementById("taskTime").value,
+        completed: false
+    });
+
+    saveTasks();
+    renderTasks();
+
+    input.value = "";
+}
+
+// ---------------- RENDER ----------------
 function renderTasks() {
-    const list = document.getElementById("taskList");
+    let list = document.getElementById("taskList");
     list.innerHTML = "";
 
     let filtered = tasks.filter(t => {
@@ -107,10 +100,9 @@ function renderTasks() {
         let li = document.createElement("li");
 
         li.innerHTML = `
-            <div class="${task.completed ? "completed" : ""}">
-                ${task.text}<br>
-                <small>${task.date || ""} ${task.time || ""}</small>
-            </div>
+            <span style="text-decoration:${task.completed ? "line-through" : "none"}">
+                ${task.text}
+            </span>
             <div>
                 <button onclick="toggleTask(${index})">✔</button>
                 <button onclick="deleteTask(${index})">❌</button>
@@ -121,55 +113,6 @@ function renderTasks() {
     });
 
     updateProgress();
-}
-
-// ---------------- ADD TASK (SMART TRANSLATION) ----------------
-async function addTask() {
-    let input = document.getElementById("taskInput");
-    let text = input.value.trim();
-
-    if (!text) {
-        alert("Enter task");
-        return;
-    }
-
-    let original = text.toLowerCase();
-
-    // 🔥 CHECK WORD FIX FIRST
-    if (currentLang !== "en" && wordFix[currentLang][original]) {
-        text = wordFix[currentLang][original];
-    } else if (currentLang !== "en") {
-        try {
-            let res = await fetch(BACKEND_URL, {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({
-                    text: text,
-                    lang: currentLang
-                })
-            });
-
-            let data = await res.json();
-
-            if (data.translated) {
-                text = data.translated;
-            }
-        } catch (err) {
-            console.log("Translation failed:", err);
-        }
-    }
-
-    tasks.push({
-        text: text,
-        date: taskDate.value,
-        time: taskTime.value,
-        completed: false
-    });
-
-    saveTasks();
-    renderTasks();
-
-    input.value = "";
 }
 
 // ---------------- TOGGLE ----------------
@@ -208,63 +151,6 @@ function updateProgress() {
 function saveTasks() {
     localStorage.setItem("tasks", JSON.stringify(tasks));
 }
-
-// ---------------- LANGUAGE ----------------
-function changeLanguage() {
-    currentLang = document.getElementById("language").value;
-    let t = translations[currentLang];
-
-    document.getElementById("title").innerText = t.title;
-    document.getElementById("taskInput").placeholder = t.placeholder;
-
-    document.getElementById("addBtn").innerText = t.add;
-    document.getElementById("allBtn").innerText = t.all;
-    document.getElementById("completedBtn").innerText = t.completed;
-    document.getElementById("pendingBtn").innerText = t.pending;
-
-    updateProgress();
-}
-
-// ---------------- PARTICLES ----------------
-const canvas = document.getElementById("particles");
-const ctx = canvas.getContext("2d");
-
-function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-}
-resizeCanvas();
-window.addEventListener("resize", resizeCanvas);
-
-let particles = [];
-
-for (let i = 0; i < 70; i++) {
-    particles.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        speed: Math.random() * 0.5 + 0.2
-    });
-}
-
-function animateParticles() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    particles.forEach(p => {
-        ctx.fillStyle = "rgba(0,198,255,0.7)";
-        ctx.fillRect(p.x, p.y, 2, 2);
-
-        p.y += p.speed;
-
-        if (p.y > canvas.height) {
-            p.y = 0;
-            p.x = Math.random() * canvas.width;
-        }
-    });
-
-    requestAnimationFrame(animateParticles);
-}
-
-animateParticles();
 
 // ---------------- INIT ----------------
 renderTasks();
